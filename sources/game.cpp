@@ -40,7 +40,7 @@ for ( int i = 0 ; i<26; i++)
         {
         k= randomNumber();    
         }
-    player1.originalStack.push(gameDeck[k]);
+    player1.pushCardToOriginalStack(gameDeck[k]);
     gameDeck[k]=Card(JOKER,JOKERN);
     
     int j= randomNumber(); 
@@ -48,7 +48,7 @@ for ( int i = 0 ; i<26; i++)
         {
         j= randomNumber();    
         }    
-    player2.originalStack.push(gameDeck[j]);
+    player2.pushCardToOriginalStack(gameDeck[j]);
     gameDeck[j]=Card(JOKER,JOKERN);
     }
 }
@@ -104,12 +104,12 @@ Regular turn
 Regular turn
 */
 
-
-    std::vector<Card> drawDeck;
-    Card card1 = player1.originalStack.top();
-    player1.originalStack.pop();
-    Card card2 = player2.originalStack.top();
-    player2.originalStack.pop();
+    int drawDeck;
+   // std::vector<Card> drawDeck;
+    Card card1 = player1.getTop();
+    player1.popCardFromOriginalStack();
+    Card card2 = player2.getTop();
+    player2.popCardFromOriginalStack();
     
     if (card1.getNum()!=ACE&&card2.getNum()!=TWO||card1.getNum()!=TWO&&card2.getNum()!=ACE)
     {
@@ -119,8 +119,9 @@ Regular turn
         + card1.cardTypeToString(card1.getType()) + lastTurnString=player2.getName()
          + "played"+ card2.cardNumToString(card2.getNum()) + "of" 
          +  card2.cardTypeToString(card2.getType()) + "."+ player1.getName()+  "wins." ;
-        player1.cardesTakenStack.push(card1);
-        player1.cardesTakenStack.push(card2);
+        player1.pushCardToCardesTakenStack(card1);
+        player1.pushCardToCardesTakenStack(card2);
+        player1.cardesWon++;
         }
         
         if(card1.getNum()<card2.getNum())
@@ -129,8 +130,9 @@ Regular turn
                 + card2.cardTypeToString(card2.getType()) + ". " + player1.getName() + " played " 
                 + card1.cardNumToString(card1.getNum()) + " of " + card1.cardTypeToString(card1.getType())
                 + ". " + player2.getName() + " wins.";
-        player2.cardesTakenStack.push(card1);
-        player2.cardesTakenStack.push(card2);
+        player2.pushCardToCardesTakenStack(card1);
+        player2.pushCardToCardesTakenStack(card2);
+        player2.cardesWon++;
         }
 
 /*
@@ -141,39 +143,46 @@ Draw
         + card1.cardTypeToString(card1.getType()) + ", " + player2.getName() + " played " 
         + card2.cardNumToString(card2.getNum()) + " of " + card2.cardTypeToString(card2.getType()) 
         + ". Draw.";
-        drawDeck.push_back(card1);
-        drawDeck.push_back(card2);
-        Card card3 = player1.originalStack.top();
-        Card card4 = player2.originalStack.top();
-        drawDeck.push_back(card3);
-        drawDeck.push_back(card4);
-        if (player1.originalStack.empty() || player2.originalStack.empty()) {
-            while (!drawDeck.empty())
+        // drawDeck.push_back(card1);
+        // drawDeck.push_back(card2);
+        drawDeck++;
+        drawDeck++;
+        Card card3 = player1.getTop();
+        Card card4 = player2.getTop();
+//        drawDeck.push_back(card3);
+  //      drawDeck.push_back(card4);
+        if (player1.originalStackEmpty() || player2.originalStackEmpty()) {
+            while (drawDeck!=0)
             {
-            Card card5 = drawDeck.back();
-            drawDeck.pop_back();
-            player1.cardesTakenStack.push(card5);
-            Card card6 = drawDeck.back();
-            drawDeck.pop_back();
-            player2.cardesTakenStack.push(card6);
+            // Card card5 = drawDeck.back();
+            // drawDeck.pop_back();
+            // player1.pushCardToCardesTakenStack(card5);
+            // Card card6 = drawDeck.back();
+            // drawDeck.pop_back();
+            // player2.pushCardToCardesTakenStack(card6);
+            player1.cardesWon++;
+            drawDeck--;
+            player2.cardesWon++;
+            drawDeck--;
             }
             break;
         }
        
-        player1.originalStack.pop();
-        player2.originalStack.pop();
-        card1 = player1.originalStack.top();
-        card2 = player2.originalStack.top();
+        player1.popCardFromOriginalStack();
+        player2.popCardFromOriginalStack();
+        card1 = player1.getTop();
+        card2 = player2.getTop();
             
         if (card1.getNum() > card2.getNum()) {
         lastTurnString= lastTurnString + player1.getName() + " played " + card1.cardNumToString(card1.getNum()) + " of "
         + card1.cardTypeToString(card1.getType()) + ", " + player2.getName() + " played " 
         + card2.cardNumToString(card2.getNum()) + " of " + card2.cardTypeToString(card2.getType()) 
         + ". " + player1.getName() + " wins.";
-            for (const auto& card : drawDeck) {
-             player1.cardesTakenStack.push(card);
+            while (drawDeck!=0) {
+            // player1.pushCardToCardesTakenStack(card);
+            player1.cardesWon++;
             }
-        drawDeck.clear();
+        //drawDeck.clear();
             break;
             }
         
@@ -182,21 +191,25 @@ Draw
         + card1.cardTypeToString(card1.getType()) + ", " + player2.getName() + " played " 
         + card2.cardNumToString(card2.getNum()) + " of " + card2.cardTypeToString(card2.getType()) 
         + ". " + player2.getName() + " wins.";
-            for (const auto& card : drawDeck) {
-            player2.cardesTakenStack.push(card);
+            while (drawDeck!=0) {
+            //player2.pushCardToCardesTakenStack(card);
+            player2.cardesWon++;
             }
-            drawDeck.clear();
+            //drawDeck.clear();
             break;
         }
         if (card1.getNum() == card2.getNum())
         {
-            for (const auto& card : drawDeck) {
-            player1.cardesTakenStack.push(card);
-            player2.cardesTakenStack.push(card);
-            }
-            drawDeck.clear();
-            break;
+        //     for (const auto& card : drawDeck) {
+        //     player1.pushCardToCardesTakenStack(card);
+        //     player2.pushCardToCardesTakenStack(card);
+        //     }
+        //     drawDeck.clear();
+        //     break;
+            counterTurns++;
+            continue;
         }
+    counterTurns++;
     }
 }
 
@@ -206,13 +219,13 @@ Draw
     if (card1.getNum()==ACE&&card2.getNum()==TWO||card1.getNum()==TWO&&card2.getNum()==ACE){
         if(card1.getNum()<card2.getNum())
         {
-        player1.cardesTakenStack.push(card1);
-        player1.cardesTakenStack.push(card2);
+        player1.pushCardToCardesTakenStack(card1);
+        player1.pushCardToCardesTakenStack(card2);
          }
         if(card1.getNum()>card2.getNum())
         {
-        player2.cardesTakenStack.push(card1);
-        player2.cardesTakenStack.push(card2);
+        player2.pushCardToCardesTakenStack(card1);
+        player2.pushCardToCardesTakenStack(card2);
         }
     }
 
@@ -241,15 +254,15 @@ playTurn();
 };
 
 void Game::printWiner(){
-    if(player1.cardesTakenStack.size()>player2.cardesTakenStack.size())
+    if(player1.cardesTakenSize()>player2.cardesTakenSize())
     {
      std::cout << player1.getName() + "won" << std::endl;  
     }
-    if(player1.cardesTakenStack.size()<player2.cardesTakenStack.size())
+    if(player1.cardesTakenSize()<player2.cardesTakenSize())
     {
      std::cout << player2.getName() + "won" << std::endl;  
     }
-    if(player1.cardesTakenStack.size()==player2.cardesTakenStack.size())
+    if(player1.cardesTakenSize()==player2.cardesTakenSize())
     {
     std::cout << "there was a draw" << std::endl;  
     }
@@ -265,7 +278,7 @@ void Game::printWiner(){
     cout << "Loss Rate: " << lossRate * 100 << "%" << endl;
     cout << "Draw Rate: " << drawRate * 100 << "%" << endl;
     cout << "Total Games Played: " << numOfTurnsPlayed << endl;
-    cout << "Cards Won: " << player.cardesTakenStack.size() << endl;
+    cout << "Cards Won: " << player.cardesTakenSize() << endl;
 };
 
 void Game::printStats(){
@@ -284,3 +297,4 @@ void Game::printLog(){
 
 
 };
+
