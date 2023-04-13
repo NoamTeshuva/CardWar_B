@@ -6,16 +6,15 @@ namespace ariel{
 class Game{
 
 private:
-Player player1;
-Player player2;
+Player &player1;
+Player &player2;
 int counterTurns;
-
+string log;
+string lastTurnString;
+int numOfTurnsPlayed;
+int drawInThisGame;
 public:
-    Game(Player player1, Player player2); //constructor
-
-
-
-
+Game(Player &player1, Player &player2); //constructor
 void playTurn();
 void printLastTurn();
 void playAll();

@@ -14,28 +14,29 @@ private:
     int numOfWins=0;
     int numOfDraws=0;
     std::stack<Card> originalStack;
-    std::stack<Card> cardesTakenStack;
+    bool playNow;
+    int cardesWon=0 ;
 public: 
     Player ();
     Player  (string nameP);
     string getName() const { return nameP; }
-    int cardesWon=0 ;
-
+    int getNumOfWins();
+    int getNumOfDraws();
+    int stacksize();
+    int cardesTaken();
+    void setNumOfWins();
+    void setNumOfDraws(int num);
+    void pushCardToOriginalStack(const Card& card);
+    Card popCardFromOriginalStack();
+    Card getTop();
+    //void pushCardToCardesTakenStack(const Card& card);
+    bool originalStackEmpty();
+    int cardesTakenSize();
+    bool playsNow();
+    void incTaken();
+    void setPlay(bool YorN);
+    void incTakenDraw();
     
-    
-    // std::string name;
-        int getNumOfWins();
-        int getNumOfDraws();
-        int stacksize();
-        int cardesTaken();
-        void setNumOfWins(int num);
-        void setNumOfDraws(int num);
-        void pushCardToOriginalStack(const Card& card);
-        Card popCardFromOriginalStack();
-        Card getTop();
-        void pushCardToCardesTakenStack(const Card& card);
-        bool originalStackEmpty();
-        int cardesTakenSize();
 };
 
 }

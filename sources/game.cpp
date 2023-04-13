@@ -6,240 +6,224 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <bits/stdc++.h>
 using namespace ariel;
+using namespace std;
 
 
+// took from gpt
+void shuffle(Card deck[], size_t size)
+{
+    // Seed the random number generator
+    std::srand(std::time(0));
 
-int randomNumber() {
-    srand(time(nullptr));
-    return rand() % 52;
+    // Iterate through the deck from the last card to the first
+    for (size_t i = size - 1; i > 0; --i)
+    {
+        // Generate a random index between 0 and i (inclusive)
+        size_t j = static_cast<size_t>(std::rand()) % (i + 1);
+
+        // Swap the cards at index i and j
+        Card temp = deck[i];
+        deck[i] = deck[j];
+        deck[j] = temp;
+    }
 }
 
 
-Card* createDeck(){
-    Card* deck = new Card[52];
+void splitDeck (Player& player1, Player& player2, Card deck[])
+{
+    for(int i=0; i<52 ; i++)
+    {
+        if(i<26){
+        player1.pushCardToOriginalStack(deck[i]);
+        }
+        else
+        player2.pushCardToOriginalStack(deck[i]);
+    } 
+}
+
+Game::Game(Player& player1, Player& player2) : player1(player1), player2(player2)
+{
+    std::vector<std::string> logVector;
+    Card gameDeck[52];
+    if (player1.playsNow() || player2.playsNow())
+    {
+        throw string("in a middle of a game");
+    }
+    else{
+    lastTurnString="";
+    log="";
+    drawInThisGame=0;
+    counterTurns=0;
+    player1.setPlay(true);
+    player2.setPlay(true);
     int i = 0;
-    for (int num = 0; num <= 13; num++) {
-        for (int type = 0; type <= 3; type++) {
-            deck[i++] = Card(static_cast<ariel::cardType>(type), static_cast<ariel::cardNum>(num));
-        }
-    }
-    return deck;
-}
-Game :: Game (Player player1, Player player2 )
-{
-    this->player1=player1;
-    this->player2=player2;
-    this->counterTurns=0;
-
-Card* gameDeck=createDeck();
-for ( int i = 0 ; i<26; i++)
-{
-    int k= randomNumber(); 
-        while (gameDeck[k].getNum()!=JOKERN&&gameDeck[k].getType()!=JOKER)
-        {
-        k= randomNumber();    
-        }
-    player1.pushCardToOriginalStack(gameDeck[k]);
-    gameDeck[k]=Card(JOKER,JOKERN);
+      for (size_t i = 0; i < 52; i++)
+    {
+        gameDeck[i] = Card((i % 4),(i % 13)) ;
+    } 
     
-    int j= randomNumber(); 
-        while (gameDeck[j].getNum()!=JOKERN&&gameDeck[j].getType()!=JOKER)
-        {
-        j= randomNumber();    
-        }    
-    player2.pushCardToOriginalStack(gameDeck[j]);
-    gameDeck[j]=Card(JOKER,JOKERN);
+    shuffle(gameDeck , 52);
+    splitDeck(player1 , player2 , gameDeck);
     }
+
+
 }
-
-
-
-
-/*
-variables
-*/
-static string lastTurnString;
-static int numOfTurnsPlayed =0;
-
-
-void Game::playTurn(){
-numOfTurnsPlayed++;
-/*
-Check if the platyrs is the same player in that cas is an error and don ket it play.
-*/
-if(&player1==&player2)
-{
-    return;
-}
-
-
-/*
-Regular turn
-*/
-// if (counterTurns==0)
-// {
-// Card* gameDeck=createDeck();
-// for ( int i = 0 ; i<26; i++)
-// {
-//     int k= randomNumber(); 
-//         while (gameDeck[k].getNum()!=JOKERN&&gameDeck[k].getType()!=JOKER)
-//         {
-//         k= randomNumber();    
-//         }
-//     player1.originalStack.push(gameDeck[k]);
-//     gameDeck[k]=Card(JOKER,JOKERN);
+void Game::playTurn() {
+    /*
+    Check if the players are the same, in that case, it's an error and don't let them play.
+    */
+    if (&player1 == &player2) {
+        throw runtime_error("Error: both players are the same.");
+    }
+    if (player1.stacksize() == 0)
+    {
+        throw "game is over";
+    }
     
-//     int j= randomNumber(); 
-//         while (gameDeck[j].getNum()!=JOKERN&&gameDeck[j].getType()!=JOKER)
-//         {
-//         j= randomNumber();    
-//         }    
-//     player2.originalStack.push(gameDeck[j]);
-//     gameDeck[j]=Card(JOKER,JOKERN);
-//     }
-// }
+    // if (counterTurns == 26) {
+    //     throw("Too many games.");
+    // }
 
-/*
-Regular turn
-*/
-
-    int drawDeck;
-   // std::vector<Card> drawDeck;
+    int drawDeck = 0;
     Card card1 = player1.getTop();
     player1.popCardFromOriginalStack();
     Card card2 = player2.getTop();
     player2.popCardFromOriginalStack();
+
     
-    if (card1.getNum()!=ACE&&card2.getNum()!=TWO||card1.getNum()!=TWO&&card2.getNum()!=ACE)
-    {
-        if(card1.getNum()>card2.getNum())
-        {
-        lastTurnString=player1.getName() + "Played" + card1.cardNumToString(card1.getNum()) + " of"
-        + card1.cardTypeToString(card1.getType()) + lastTurnString=player2.getName()
-         + "played"+ card2.cardNumToString(card2.getNum()) + "of" 
-         +  card2.cardTypeToString(card2.getType()) + "."+ player1.getName()+  "wins." ;
-        player1.pushCardToCardesTakenStack(card1);
-        player1.pushCardToCardesTakenStack(card2);
-        player1.cardesWon++;
-        }
-        
-        if(card1.getNum()<card2.getNum())
-        {
-            lastTurnString = player2.getName() + " played " + card2.cardNumToString(card2.getNum()) + " of " 
-                + card2.cardTypeToString(card2.getType()) + ". " + player1.getName() + " played " 
-                + card1.cardNumToString(card1.getNum()) + " of " + card1.cardTypeToString(card1.getType())
-                + ". " + player2.getName() + " wins.";
-        player2.pushCardToCardesTakenStack(card1);
-        player2.pushCardToCardesTakenStack(card2);
-        player2.cardesWon++;
+        /*
+        Alice Wins
+        */
+    if (card1.compare(card2) > 0) {
+            lastTurnString = player1.getName() + " Played " + card1.cardNumToString(card1.getNum()) + " of " +
+                              card1.cardTypeToString(card1.getType()) + player2.getName() + " played " +
+                              card2.cardNumToString(card2.getNum()) + " of " +
+                              card2.cardTypeToString(card2.getType()) + "." + player1.getName() + " wins.\n";
+            player1.incTaken();
+            player1.setNumOfWins();
+
         }
 
-/*
-Draw
-*/
-    while (card1.getNum() == card2.getNum()) {
-           lastTurnString = player1.getName() + " played " + card1.cardNumToString(card1.getNum()) + " of "
-        + card1.cardTypeToString(card1.getType()) + ", " + player2.getName() + " played " 
-        + card2.cardNumToString(card2.getNum()) + " of " + card2.cardTypeToString(card2.getType()) 
-        + ". Draw.";
-        // drawDeck.push_back(card1);
-        // drawDeck.push_back(card2);
-        drawDeck++;
-        drawDeck++;
-        Card card3 = player1.getTop();
-        Card card4 = player2.getTop();
-//        drawDeck.push_back(card3);
-  //      drawDeck.push_back(card4);
-        if (player1.originalStackEmpty() || player2.originalStackEmpty()) {
-            while (drawDeck!=0)
-            {
-            // Card card5 = drawDeck.back();
-            // drawDeck.pop_back();
-            // player1.pushCardToCardesTakenStack(card5);
-            // Card card6 = drawDeck.back();
-            // drawDeck.pop_back();
-            // player2.pushCardToCardesTakenStack(card6);
-            player1.cardesWon++;
-            drawDeck--;
-            player2.cardesWon++;
-            drawDeck--;
-            }
-            break;
+        /*
+        Bob win
+        */
+
+      else  if (card1.compare(card2) < 0) { 
+            lastTurnString = player2.getName() + " played " + card2.cardNumToString(card2.getNum()) + " of " +
+                              card2.cardTypeToString(card2.getType()) + ". " + player1.getName() + " played " +
+                              card1.cardNumToString(card1.getNum()) + " of " +
+                              card1.cardTypeToString(card1.getType()) + ". " + player2.getName() + " wins.\n";
+            player2.incTaken();
+            player2.setNumOfWins();
         }
-       
+
+        /*
+        Draw
+        */
+        else  {
+            while (card1.compare(card2) == 0 && player1.stacksize()>0) {
+                drawInThisGame++;
+                if (player1.stacksize()==1) {
+                    player1.incTakenDraw();
+                    player2.incTakenDraw();
+                    
+                    player1.popCardFromOriginalStack();
+                    player2.popCardFromOriginalStack();
+                   
+                    player1.incTakenDraw();
+                    player2.incTakenDraw();
+                    break;
+                }
+
+                if (drawDeck == 0) {
+                    drawDeck = 2;
+                }
+
+                lastTurnString = lastTurnString + player1.getName() + " played " +
+                                  card1.cardNumToString(card1.getNum()) + " of " +
+                                  card1.cardTypeToString(card1.getType()) + ", " + player2.getName() + " played " +
+                                  card2.cardNumToString(card2.getNum()) + " of " +
+                                  card2.cardTypeToString(card2.getType()) + ". Draw. \n";
+
+                /*upside down card*/
         player1.popCardFromOriginalStack();
         player2.popCardFromOriginalStack();
+        drawDeck++;
+        drawDeck++;
+
+
         card1 = player1.getTop();
         card2 = player2.getTop();
-            
-        if (card1.getNum() > card2.getNum()) {
-        lastTurnString= lastTurnString + player1.getName() + " played " + card1.cardNumToString(card1.getNum()) + " of "
-        + card1.cardTypeToString(card1.getType()) + ", " + player2.getName() + " played " 
-        + card2.cardNumToString(card2.getNum()) + " of " + card2.cardTypeToString(card2.getType()) 
-        + ". " + player1.getName() + " wins.";
-            while (drawDeck!=0) {
-            // player1.pushCardToCardesTakenStack(card);
-            player1.cardesWon++;
+        player1.popCardFromOriginalStack();
+        player2.popCardFromOriginalStack();
+        drawDeck++;
+        drawDeck++;
+
+
+
+        if (card1.compare(card2) > 0) {
+        player1.setNumOfWins();
+        while (drawDeck!=0) {
+            player1.incTakenDraw();
+            drawDeck--;
             }
-        //drawDeck.clear();
-            break;
-            }
+        break;
         
-        if (card1.getNum() < card2.getNum()) {
-        lastTurnString =lastTurnString +  player1.getName() + " played " + card1.cardNumToString(card1.getNum()) + " of "
+
+        lastTurnString= lastTurnString + (player1.getName() + " played " + card1.cardNumToString(card1.getNum()) + " of "
         + card1.cardTypeToString(card1.getType()) + ", " + player2.getName() + " played " 
         + card2.cardNumToString(card2.getNum()) + " of " + card2.cardTypeToString(card2.getType()) 
-        + ". " + player2.getName() + " wins.";
+        + ". " + player1.getName() + " wins.\n");
+        }
+        
+        
+
+       else if (card1.compare(card2) <0) {
+        player2.setNumOfWins();
             while (drawDeck!=0) {
-            //player2.pushCardToCardesTakenStack(card);
-            player2.cardesWon++;
+            player2.incTakenDraw();
+            drawDeck--;
             }
-            //drawDeck.clear();
-            break;
+        break;
+        lastTurnString =lastTurnString + (player1.getName() + " played " + card1.cardNumToString(card1.getNum()) + " of "
+        + card1.cardTypeToString(card1.getType()) + ", " + player2.getName() + " played " 
+        + card2.cardNumToString(card2.getNum()) + " of " + card2.cardTypeToString(card2.getType()) 
+        + ". " + player2.getName() + " wins.\n");
+    }
+    
+    
+
+
+        else  {
+        Card card1 = player1.getTop();
+        player1.popCardFromOriginalStack();
+        
+        Card card2 = player2.getTop();
+        player2.popCardFromOriginalStack();
+        
+        drawDeck++;
+        drawDeck++;
         }
-        if (card1.getNum() == card2.getNum())
+    
+    if(player1.stacksize()==0 && card1.compare(card2) ==0 ){
+        while (drawDeck!=0)
         {
-        //     for (const auto& card : drawDeck) {
-        //     player1.pushCardToCardesTakenStack(card);
-        //     player2.pushCardToCardesTakenStack(card);
-        //     }
-        //     drawDeck.clear();
-        //     break;
-            counterTurns++;
-            continue;
-        }
+          player1.incTakenDraw();
+          drawDeck--; 
+        player2.incTakenDraw();
+          drawDeck--;     
+        }    
+    }  
+    }
+ }
+    if(counterTurns<27){
     counterTurns++;
     }
-}
-
-    /*
-    The case which tyo is bigger than ace
-    */
-    if (card1.getNum()==ACE&&card2.getNum()==TWO||card1.getNum()==TWO&&card2.getNum()==ACE){
-        if(card1.getNum()<card2.getNum())
-        {
-        player1.pushCardToCardesTakenStack(card1);
-        player1.pushCardToCardesTakenStack(card2);
-         }
-        if(card1.getNum()>card2.getNum())
-        {
-        player2.pushCardToCardesTakenStack(card1);
-        player2.pushCardToCardesTakenStack(card2);
-        }
-    }
-
-if(counterTurns<26){
-counterTurns++;
-}
-else{
-    printStats();
-    printWiner();
-}
-
+ log=log + "\n"+ lastTurnString;
 
 };
-
 
 
 void Game::printLastTurn(){
@@ -247,39 +231,62 @@ std::cout << lastTurnString << std::endl;
 };
 
 void Game::playAll(){
-while (player1.stacksize()>0)
+while ( player1.stacksize()>0)
 {
+
 playTurn();
+
 }
 };
 
+//used gpt
+
 void Game::printWiner(){
+    
+    player1.setPlay(false);
+    player2.setPlay(false);
+    
     if(player1.cardesTakenSize()>player2.cardesTakenSize())
     {
-     std::cout << player1.getName() + "won" << std::endl;  
+     std::cout << player1.getName() + " won" << std::endl;  
     }
     if(player1.cardesTakenSize()<player2.cardesTakenSize())
     {
-     std::cout << player2.getName() + "won" << std::endl;  
+     std::cout << player2.getName() + " won" << std::endl;  
     }
     if(player1.cardesTakenSize()==player2.cardesTakenSize())
     {
-    std::cout << "there was a draw" << std::endl;  
+    std::cout << " there was a draw" << std::endl;  
     }
+
 };
 
+//used gpt
 
     void Game ::printStatsOfPlayer(Player& player){
-    float winRate = (float)player.getNumOfWins() / (float)numOfTurnsPlayed;
-    float drawRate = (float)player.getNumOfDraws() / (float)numOfTurnsPlayed;
+    float winRate = (float)player.getNumOfWins() / (float)counterTurns;
+    float drawRate = (float)drawInThisGame / (float)counterTurns;
     float lossRate = 1 - winRate - drawRate;
     cout << "Player " << player.getName() << " Statistics:" << endl;
+    
+    if(winRate!=0){
     cout << "Win Rate: " << winRate * 100 << "%" << endl;
+    }
+    if(winRate==0){
+    cout << "Loss Rate: " << 0 << "%" << endl;
+    }
+    
+    if(lossRate!=0){
     cout << "Loss Rate: " << lossRate * 100 << "%" << endl;
+    }
+    if(lossRate==0){
+    cout << "Loss Rate: " << 0 << "%" << endl;
+    }
     cout << "Draw Rate: " << drawRate * 100 << "%" << endl;
-    cout << "Total Games Played: " << numOfTurnsPlayed << endl;
+    cout << "Total Games Played: " << counterTurns << endl;
     cout << "Cards Won: " << player.cardesTakenSize() << endl;
 };
+//used gpt
 
 void Game::printStats(){
     cout << "-------------------" << endl;
@@ -287,14 +294,12 @@ void Game::printStats(){
     cout << "-------------------" << endl;
     printStatsOfPlayer(player2);
     cout << "-------------------" << endl;
-    cout << "Total Draws: " << player1.getNumOfDraws() << endl;
+    cout << "Total Draws: " << drawInThisGame << endl;
 
 };
 
 
 void Game::printLog(){
-
-
-
+cout << log << endl;
 };
 
